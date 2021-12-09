@@ -3,50 +3,75 @@ using Test
 using QML
 using Qt5QuickControls_jll
 using Observables
+push!(LOAD_PATH,pwd()) # Hard coded, need to be changed
+using JuliaPBF
+using Printf
 
-hello() = "Hello from Julia"
+##
+## PARAMETERS ##
+dirExamples = "d:\\work\\JuliaPBF_UI.jl\\examples\\" # Hard coded, need to be changed
+dirCaseXml  = ""
+const parseCheck = Observable(false)
+const runCheck   = Observable(false)
 
-counter = 0
-const oldcounter = Observable(0)
-
-function increment_counter()
-  global counter, oldcounter
-  oldcounter[] = counter
-  counter += 1
+function read_xml_file_dir(caseXML)
+  global dirExamples
+  global dirCaseXml = dirExamples*caseXML
+  global parseCheck
+  out = false
+  if isfile(dirCaseXml)
+    print("\nXML DIR: "*dirCaseXml*"\n")
+    out = true
+    parseCheck[]  = true
+  else
+    print("\nXML DIR: The case does not exist.\n") 
+    out = false
+    parseCheck[]  = false
+  end
+  return out
 end
 
-function counter_value()
-  global counter
-  return counter
-end
-
-const bg_counter = Observable(0)
-
-function counter_slot()
-  global bg_counter
-  bg_counter[] += 1
-end
-
-# This slows down the bg_counter display. It counts a *lot* faster this way, proving the main overhead is in the GUI update and not in the callback mechanism to Julia
-const bg_counter_slow = Observable(0)
-on(bg_counter) do newcount
-  if newcount % 100 == 0
-    bg_counter_slow[] = newcount
+function parsing_xml_file()
+  print("XML PARSED...")
+  global dirCaseXml
+  try
+    global ANALYDATA   = JuliaPBF.IO_dev.Parsing_xml_file(dirCaseXml) # Parsing Inputs
+    global SIMULDATA   = JuliaPBF.Solver.PreProcessing(ANALYDATA) # FillInitialBox, GenInitGrid   
+    print("DONE.\n")
+  finally
+    print("CHECK XML.\n")
   end
 end
 
-@qmlfunction counter_slot hello increment_counter uppercase string
+function model_run()
+  print("RUNNING MODEL...\n")
+  runCheck[] = true
+  curr_time = 0.0 
+  ii        = 0 
+  while curr_time < ANALYDATA.endTime
+    curr_time += ANALYDATA.timeStep.dt
+    @printf("Time = %10.5f \n",curr_time)
+    @printf("  Update for          :")
+    @time JuliaPBF.Solver.Update(SIMULDATA, ANALYDATA)
+
+    ii += 1
+    @printf("  Writing Output for  :")
+    @time JuliaPBF.IO_dev.Writing_ascii_file(SIMULDATA, "out__"*lpad(ii,5,"0"))
+    if runCheck == false
+      break
+    end
+  end 
+  print("END MODEL.\n")
+end
+
+
+@qmlfunction read_xml_file_dir parsing_xml_file model_run
 
 # absolute path in case working dir is overridden
 qml_file = joinpath(dirname(@__FILE__), "qml", "gui.qml")
 
 # Load the QML file
-loadqml(qml_file, guiproperties = JuliaPropertyMap("timer" => QTimer(), "oldcounter" => oldcounter, "bg_counter" => bg_counter_slow))
+loadqml(qml_file, guiproperties=JuliaPropertyMap("parsing_check" => parseCheck, "running_check" => runCheck))
 
 # Run the application
 exec()
-
-println("Button was pressed $counter times")
-println("Background counter now at $(bg_counter[])")
-
-# end
