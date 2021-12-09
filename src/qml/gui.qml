@@ -11,31 +11,35 @@ ApplicationWindow {
     height: 600
     visible: true
 
-    Connections {
-      target: guiproperties.timer
-      function onTimeout() { Julia.counter_slot(); }
-    }
-
     Row {
-        id: firstRow
+        id: baseRow
         anchors.fill: parent
-        spacing:parent.width/100
-
-        Rectangle {
-            id: blank
-            width:0.01*parent.width
-        }
 
         Column {
             id: firstCol
             anchors.left:  blank.right
-            width: 0.14*firstRow.width
-            spacing: firstRow.height/100
+            width: 0.14*baseRow.width
+            spacing: baseRow.height/100
 
             Button {
                 width: firstCol.width
                 text: "Applying Changes"
-                // onClicked: { resultDisplay.text = Julia.increment_counter().toString(); }
+                // enable: false
+                onClicked: {  
+                    if (Julia.read_xml_file_dir(caseXml.currentText)){
+                        viscosity.value = 0.1;
+                        surfaceTension.value = 0.7;
+                        Julia.parsing_xml_file();
+                        if (guiproperties.parsing_check){
+                            runButton.text = "RUN!"    
+                        }
+                        else
+                        {
+                            runButton.text = "CHECK XML"    
+                        }
+                        // runButton.text = guiproperties.parsing_check.toString();
+                    } 
+                }
             }
 
             Text {
@@ -43,12 +47,9 @@ ApplicationWindow {
             }
             ComboBox
             {
-                id: backendBox
+                id: caseXml
                 width: firstCol.width
-                model: ["run.xml", "DamBreak", "Static"]
-                // onCurrentIndexChanged: {
-                // root.init_and_plot()
-                // }
+                model: ["run.xml", "DamBreak.xml", "RecBubble.xml"]
             }
             Text {
                 text: "Viscosity"
@@ -76,78 +77,33 @@ ApplicationWindow {
                 maximumValue: 1.0
                 // onValueChanged: root.do_plot()
             }
+            
+            Button {
+                id: "runButton"
+                width: firstCol.width
+                text: "CHECK XML"
+                onClicked: {
+                    if (guiproperties.parsing_check){
+                        Julia.model_run() // 풀어서 onclick안에 모두 넣어야해... 그래야 중간에 취소가능..!
+                    } 
+                }
+            }
         } //Col1
         
         Rectangle {
             id: blank3
-            color:"black"
+            color:"grey"
+            // text: "under Dvlp..."
             // anchors.fill: parent
             anchors.left:  firstCol.right
-            width: 0.85* firstRow.width
-            height: firstRow.height
+            width: 0.85* baseRow.width
+            height: baseRow.height
+
+            Text {
+                anchors.fill: parent
+                text: "under Dvlp..."
+                // font: textMetrics.font
+            }
         }
-
-        // Column {
-        //     anchors.left:  firstCol.right
-        //     // spacing: 5
-
-        //     Text {
-        //         id: juliaHello
-        //         // Layout.alignment: Qt.AlignCenter
-        //         // text: Julia.hello()
-        //     }
-
-        //     Button {
-        //         // Layout.alignment: Qt.AlignCenter
-        //         text: "Push Me"
-        //         // onClicked: { resultDisplay.text = Julia.increment_counter().toString(); }
-        //     }
-
-        //     Text {
-        //         id: resultDisplay
-        //         // Layout.alignment: Qt.AlignCenter
-        //         text: "Push button for result"
-        //     }
-
-        //     TextField {
-        //         id: lowerIn
-        //         // Layout.alignment: Qt.AlignCenter
-        //         // Layout.minimumWidth: 300
-        //         // placeholderText: qsTr("Start typing, Julia does the rest...")
-        //     }
-
-        //     Text {
-        //         id: upperOut
-        //         // Layout.alignment: Qt.AlignCenter
-        //         // text: Julia.uppercase(lowerIn.text)
-        //     }
-
-        //     Text {
-        //         // Layout.alignment: Qt.AlignCenter
-        //         text: "Concatenation, showing multiple arguments:"
-        //     }
-
-        //     Text {
-        //         // Layout.alignment: Qt.AlignCenter
-        //         // text: Julia.string(guiproperties.oldcounter, ", ", upperOut.text)
-        //     }
-
-        //     Button {
-        //         // Layout.alignment: Qt.AlignCenter
-        //         text: "Start counting"
-        //         // onClicked: guiproperties.timer.start()
-        //     }
-
-        //     Text {
-        //         // Layout.alignment: Qt.AlignCenter
-        //         // text: guiproperties.bg_counter.toString()
-        //     }
-
-        //     Button {
-        //         // Layout.alignment: Qt.AlignCenter
-        //         text: "Stop counting"
-        //         // onClicked: guiproperties.timer.stop()
-        //     }
-        // } //Col2
     } // Row
 }
