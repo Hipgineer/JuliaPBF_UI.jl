@@ -9,7 +9,7 @@ using Printf
 
 ##
 ## PARAMETERS ##
-dirExamples = "d:\\work\\JuliaPBF_UI.jl\\examples\\" # Hard coded, need to be changed
+dirExamples = "C:\\Users\\geosr\\Desktop\\work\\JuliaPBF_UI.jl\\examples\\" # Hard coded, need to be changed
 dirCaseXml  = ""
 const parseCheck = Observable(false)
 const runCheck   = Observable(false)
