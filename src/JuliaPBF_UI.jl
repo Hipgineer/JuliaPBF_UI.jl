@@ -36,10 +36,13 @@ function parsing_xml_file()
   global dirCaseXml
   try
     global ANALYDATA   = JuliaPBF.IO_dev.Parsing_xml_file(dirCaseXml) # Parsing Inputs
-    global SIMULDATA   = JuliaPBF.Solver.PreProcessing(ANALYDATA) # FillInitialBox, GenInitGrid   
+    #global SIMULDATA   = JuliaPBF.Solver.PreProcessing(ANALYDATA) # FillInitialBox, GenInitGrid   
     print("DONE.\n")
-  finally
-    print("CHECK XML.\n")
+  catch err
+    
+    print("\n\n")
+    println(err)
+    print("Please, check XML file..\n")
   end
 end
 
@@ -71,7 +74,8 @@ end
 qml_file = joinpath(dirname(@__FILE__), "qml", "gui.qml")
 
 # Load the QML file
-loadqml(qml_file, guiproperties=JuliaPropertyMap("parsing_check" => parseCheck, "running_check" => runCheck))
+properties = JuliaPropertyMap("parsing_check" => parseCheck, "running_check" => runCheck)
+loadqml(qml_file, guiproperties=properties)
 
 # Run the application
 exec()
