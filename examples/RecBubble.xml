@@ -3,7 +3,7 @@
 
     <!-- Simulation Setting -->
     <TimeStep type="1" dt="0.016"/>
-    <EndTime sec="1.6"/>
+    <EndTime sec="0.16"/>
     <Gravity x="0.0" y="0.0"/>
     <Particles nMaxParticles="500000" maxParticleSize="0.01"/>
     <TensileInstability k="0.01" dq="0.1" n="4.0"/>            <!-- for 2D, k=0.001 dq=0.1 n=4.0 are default values -->
