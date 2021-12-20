@@ -5,11 +5,22 @@ import org.julialang 1.0
 
 ApplicationWindow {
     title: "JuliaPBF"
+    id: juliaPBF
     x: 100
     y: 100
     width: 1000
     height: 600
     visible: true
+
+    signal modelUpdate()
+
+    Connections {
+        target: juliaPBF
+        function onModelUpdate(){
+            // juliaPBF.title: "SIGNAL!"
+            // runButton.text: "SIGNAL >_<"
+        }
+    }
 
     Row {
         id: baseRow
@@ -37,7 +48,6 @@ ApplicationWindow {
                         {
                             runButton.text = "CHECK XML"    
                         }
-                        // runButton.text = guiproperties.parsing_check.toString();
                     } 
                 }
             }
@@ -84,7 +94,17 @@ ApplicationWindow {
                 text: "CHECK XML"
                 onClicked: {
                     if (guiproperties.parsing_check){
-                        Julia.model_run() // 풀어서 onclick안에 모두 넣어야해... 그래야 중간에 취소가능..!
+                        
+                        if (runButton.text == "RUN!")
+                        {
+                            Julia.model_run() // 풀어서 onclick안에 모두 넣어야해... 그래야 중간에 취소가능..!
+                            runButton.text = "STOP"
+                        }
+                        else if (runButton.text == "STOP")
+                        {
+                            Julia.stop_run()
+                            runButton.text = "RUN!"
+                        }
                     } 
                 }
             }
